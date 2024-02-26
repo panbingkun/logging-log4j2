@@ -21,9 +21,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.net.URLConnection;
 import java.util.Base64;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.kit.env.Log4jProperty;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.logging.log4j.util.LoaderUtil;
-import org.apache.logging.log4j.util.PropertyEnvironment;
 
 /**
  * Provides the Basic Authorization header to a request.
@@ -42,25 +43,19 @@ public class BasicAuthorizationProvider implements AuthorizationProvider {
 
     private String authString = null;
 
-    public BasicAuthorizationProvider(final PropertyEnvironment props) {
-        final String userName =
-                props.getStringProperty(PREFIXES, AUTH_USER_NAME, () -> props.getStringProperty(CONFIG_USER_NAME));
-        String password =
-                props.getStringProperty(PREFIXES, AUTH_PASSWORD, () -> props.getStringProperty(CONFIG_PASSWORD));
-        final String decryptor = props.getStringProperty(
-                PREFIXES, AUTH_PASSWORD_DECRYPTOR, () -> props.getStringProperty(PASSWORD_DECRYPTOR));
-        if (decryptor != null) {
+    public BasicAuthorizationProvider(final PropertyEnvironment env) {
+        final Properties props = env.getProperty(Properties.class);
+        String password = props.password();
+        if (props.passwordDecryptor() != null) {
             try {
-                final Object obj = LoaderUtil.newInstanceOf(decryptor);
-                if (obj instanceof PasswordDecryptor) {
-                    password = ((PasswordDecryptor) obj).decryptPassword(password);
-                }
+                final PasswordDecryptor decryptor = LoaderUtil.newInstanceOf(props.passwordDecryptor);
+                password = decryptor.decryptPassword(password);
             } catch (final Exception ex) {
                 LOGGER.warn("Unable to decrypt password.", ex);
             }
         }
-        if (userName != null && password != null) {
-            authString = "Basic " + encoder.encodeToString((userName + ":" + password).getBytes(UTF_8));
+        if (props.username() != null && password != null) {
+            authString = "Basic " + encoder.encodeToString((props.username() + ":" + password).getBytes(UTF_8));
         }
     }
 
@@ -70,4 +65,14 @@ public class BasicAuthorizationProvider implements AuthorizationProvider {
             urlConnection.setRequestProperty("Authorization", authString);
         }
     }
+
+    /**
+     * Configuration properties for HTTP Basic authentication.
+     *
+     * @param username The username.
+     * @param password A possibly encrypted password.
+     * @param passwordDecryptor
+     */
+    @Log4jProperty(name = "BasicAuthorizationProvider")
+    public record Properties(String username, String password, Class<? extends PasswordDecryptor> passwordDecryptor) {}
 }

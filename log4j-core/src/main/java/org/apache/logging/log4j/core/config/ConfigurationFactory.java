@@ -20,8 +20,10 @@ import java.net.URI;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
-import org.apache.logging.log4j.core.impl.Log4jPropertyKey;
 import org.apache.logging.log4j.core.util.AuthorizationProvider;
+import org.apache.logging.log4j.kit.env.Log4jProperty;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
+import org.apache.logging.log4j.kit.env.internal.PropertiesUtilPropertyEnvironment;
 import org.apache.logging.log4j.plugins.Namespace;
 import org.apache.logging.log4j.plugins.di.ConfigurableInstanceFactory;
 import org.apache.logging.log4j.plugins.di.Key;
@@ -29,8 +31,6 @@ import org.apache.logging.log4j.plugins.model.PluginNamespace;
 import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.logging.log4j.util.LoaderUtil;
 import org.apache.logging.log4j.util.PropertiesUtil;
-import org.apache.logging.log4j.util.PropertyEnvironment;
-import org.apache.logging.log4j.util.PropertyKey;
 
 /**
  * Factory class for parsed {@link Configuration} objects from a configuration file.
@@ -54,14 +54,19 @@ import org.apache.logging.log4j.util.PropertyKey;
  */
 public abstract class ConfigurationFactory extends ConfigurationBuilderFactory {
 
-    public ConfigurationFactory() {
-        super();
-        // TEMP For breakpoints
-    }
+    /**
+     * If Log4j 1.2 Bridge is present on the classpath, this property will be interpreted as the location of a Log4j 1.x
+     * configuration file.
+     */
+    @Log4jProperty
+    public static final String LOG4J1_CONFIGURATION_FILE_PROPERTY = "log4j.configuration";
 
-    public static final PropertyKey LOG4J1_CONFIGURATION_FILE_PROPERTY = Log4jPropertyKey.CONFIG_V1_FILE_NAME;
-
-    public static final PropertyKey LOG4J1_EXPERIMENTAL = Log4jPropertyKey.CONFIG_V1_COMPATIBILITY_ENABLED;
+    /**
+     * If Log4j 1.2 Bridge is present on the classpath, setting this property to {@code true} will enable the legacy
+     * Log4j 1.x configuration process.
+     */
+    @Log4jProperty
+    public static final String LOG4J1_EXPERIMENTAL = "log4j1.compatibility";
 
     /**
      * Plugin category used to inject a ConfigurationFactory {@link org.apache.logging.log4j.plugins.Plugin}
@@ -91,6 +96,7 @@ public abstract class ConfigurationFactory extends ConfigurationBuilderFactory {
     protected static final String DEFAULT_PREFIX = "log4j2";
 
     protected static final String LOG4J1_VERSION = "1";
+
     protected static final String LOG4J2_VERSION = "2";
 
     /**
@@ -131,8 +137,14 @@ public abstract class ConfigurationFactory extends ConfigurationBuilderFactory {
      * @param props PropertiesUtil.
      * @return the AuthorizationProvider, if any.
      */
+    @Deprecated
     public static AuthorizationProvider authorizationProvider(final PropertiesUtil props) {
-        return AuthorizationProvider.getAuthorizationProvider((PropertyEnvironment) props);
+        return AuthorizationProvider.getAuthorizationProvider(
+                new PropertiesUtilPropertyEnvironment(props, StatusLogger.getLogger()));
+    }
+
+    public static AuthorizationProvider authorizationProvider(final PropertyEnvironment env) {
+        return AuthorizationProvider.getAuthorizationProvider(env);
     }
 
     public abstract Configuration getConfiguration(final LoggerContext loggerContext, ConfigurationSource source);

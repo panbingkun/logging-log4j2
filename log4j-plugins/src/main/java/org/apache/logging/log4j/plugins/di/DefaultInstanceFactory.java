@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.lang.NullMarked;
 import org.apache.logging.log4j.lang.Nullable;
 import org.apache.logging.log4j.plugins.FactoryType;
@@ -56,8 +57,6 @@ import org.apache.logging.log4j.plugins.util.OrderedComparator;
 import org.apache.logging.log4j.status.StatusLogger;
 import org.apache.logging.log4j.util.Cast;
 import org.apache.logging.log4j.util.LoaderUtil;
-import org.apache.logging.log4j.util.PropertiesUtil;
-import org.apache.logging.log4j.util.PropertyEnvironment;
 
 public class DefaultInstanceFactory implements ConfigurableInstanceFactory {
 
@@ -73,15 +72,26 @@ public class DefaultInstanceFactory implements ConfigurableInstanceFactory {
     private ReflectionAgent agent = object -> object.setAccessible(true);
 
     protected DefaultInstanceFactory() {
-        this(BindingMap.newRootMap(), HierarchicalMap.newRootMap(), new ArrayList<>(), List.of());
+        this(
+                BindingMap.newRootMap(),
+                HierarchicalMap.newRootMap(),
+                new ArrayList<>(),
+                List.of(),
+                PropertyEnvironment::getGlobal,
+                LoaderUtil::getClassLoader);
     }
 
-    protected DefaultInstanceFactory(final DefaultInstanceFactory parent) {
+    private DefaultInstanceFactory(
+            final DefaultInstanceFactory parent,
+            final Supplier<PropertyEnvironment> environment,
+            final Supplier<ClassLoader> loader) {
         this(
                 parent.bindings.newChildMap(),
                 parent.scopes.newChildMap(),
                 parent.factoryResolvers,
-                parent.instancePostProcessors);
+                parent.instancePostProcessors,
+                environment,
+                loader);
         this.agent = parent.agent;
     }
 
@@ -89,7 +99,9 @@ public class DefaultInstanceFactory implements ConfigurableInstanceFactory {
             final BindingMap bindings,
             final HierarchicalMap<Class<? extends Annotation>, Scope> scopes,
             final List<FactoryResolver<?>> factoryResolvers,
-            final Collection<InstancePostProcessor> instancePostProcessors) {
+            final Collection<InstancePostProcessor> instancePostProcessors,
+            final Supplier<PropertyEnvironment> environment,
+            final Supplier<ClassLoader> loader) {
         this.bindings = bindings;
         this.scopes = scopes;
         this.factoryResolvers = factoryResolvers;
@@ -97,8 +109,8 @@ public class DefaultInstanceFactory implements ConfigurableInstanceFactory {
         this.bindings.put(InjectionPoint.CURRENT_INJECTION_POINT, currentInjectionPoint::get);
         this.bindings.put(Key.forClass(ConfigurableInstanceFactory.class), () -> this);
         this.bindings.put(Key.forClass(InstanceFactory.class), () -> this);
-        this.bindings.put(Key.forClass(PropertyEnvironment.class), PropertiesUtil::getProperties);
-        this.bindings.put(Key.forClass(ClassLoader.class), LoaderUtil::getClassLoader);
+        this.bindings.put(Key.forClass(PropertyEnvironment.class), environment);
+        this.bindings.put(Key.forClass(ClassLoader.class), loader);
     }
 
     @Override
@@ -336,7 +348,16 @@ public class DefaultInstanceFactory implements ConfigurableInstanceFactory {
 
     @Override
     public ConfigurableInstanceFactory newChildInstanceFactory() {
-        return new DefaultInstanceFactory(this);
+        return new DefaultInstanceFactory(
+                this,
+                bindings.get(Key.forClass(PropertyEnvironment.class), List.of()),
+                bindings.get(Key.forClass(ClassLoader.class), List.of()));
+    }
+
+    @Override
+    public ConfigurableInstanceFactory newChildInstanceFactory(
+            final Supplier<PropertyEnvironment> environment, final Supplier<ClassLoader> loader) {
+        return new DefaultInstanceFactory(this, environment, loader);
     }
 
     @Override

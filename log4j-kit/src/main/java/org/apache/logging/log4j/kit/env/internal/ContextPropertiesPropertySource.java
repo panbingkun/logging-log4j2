@@ -16,8 +16,8 @@
  */
 package org.apache.logging.log4j.kit.env.internal;
 
+import org.apache.logging.log4j.kit.env.PropertySource;
 import org.apache.logging.log4j.status.StatusLogger;
-import org.apache.logging.log4j.util.PropertySource;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -57,10 +57,5 @@ public class ContextPropertiesPropertySource implements PropertySource {
                             e);
         }
         return null;
-    }
-
-    @Override
-    public boolean containsProperty(final String key) {
-        return getProperty(key) != null;
     }
 }

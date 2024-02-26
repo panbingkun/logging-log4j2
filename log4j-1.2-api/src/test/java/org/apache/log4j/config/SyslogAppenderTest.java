@@ -16,7 +16,7 @@
  */
 package org.apache.log4j.config;
 
-import static org.apache.logging.log4j.core.impl.Log4jPropertyKey.CONFIG_V1_FILE_NAME;
+import static org.apache.logging.log4j.core.impl.PropertyKeys.CONFIG_V1_FILE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;

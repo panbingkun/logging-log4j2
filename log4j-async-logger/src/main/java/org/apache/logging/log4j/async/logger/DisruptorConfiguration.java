@@ -21,7 +21,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.AbstractLifeCycle;
 import org.apache.logging.log4j.core.config.ConfigurationExtension;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.plugins.Configurable;
+import org.apache.logging.log4j.plugins.Inject;
 import org.apache.logging.log4j.plugins.Plugin;
 import org.apache.logging.log4j.plugins.PluginAliases;
 import org.apache.logging.log4j.plugins.PluginBuilderAttribute;
@@ -38,11 +40,12 @@ public final class DisruptorConfiguration extends AbstractLifeCycle implements C
     private static final Logger LOGGER = StatusLogger.getLogger();
 
     private final AsyncWaitStrategyFactory waitStrategyFactory;
-    private final Lazy<AsyncLoggerConfigDisruptor> loggerConfigDisruptor =
-            Lazy.lazy(() -> new AsyncLoggerConfigDisruptor(getWaitStrategyFactory()));
+    private final Lazy<AsyncLoggerConfigDisruptor> loggerConfigDisruptor;
 
-    private DisruptorConfiguration(final AsyncWaitStrategyFactory waitStrategyFactory) {
+    private DisruptorConfiguration(
+            final PropertyKeys.AsyncLoggerConfig propsConfig, final AsyncWaitStrategyFactory waitStrategyFactory) {
         this.waitStrategyFactory = waitStrategyFactory;
+        loggerConfigDisruptor = Lazy.lazy(() -> new AsyncLoggerConfigDisruptor(propsConfig, waitStrategyFactory));
     }
 
     public AsyncWaitStrategyFactory getWaitStrategyFactory() {
@@ -84,6 +87,14 @@ public final class DisruptorConfiguration extends AbstractLifeCycle implements C
         @PluginBuilderAttribute
         private String waitFactory;
 
+        private PropertyEnvironment environment;
+
+        @Inject
+        public Builder setEnvironment(final PropertyEnvironment environment) {
+            this.environment = environment;
+            return this;
+        }
+
         public Builder setFactoryClassName(final String factoryClassName) {
             this.factoryClassName = factoryClassName;
             return this;
@@ -97,6 +108,7 @@ public final class DisruptorConfiguration extends AbstractLifeCycle implements C
         @Override
         public DisruptorConfiguration build() {
             return new DisruptorConfiguration(
+                    environment.getProperty(PropertyKeys.AsyncLoggerConfig.class),
                     createWaitStrategyFactory(Objects.toString(waitFactory, factoryClassName)));
         }
 

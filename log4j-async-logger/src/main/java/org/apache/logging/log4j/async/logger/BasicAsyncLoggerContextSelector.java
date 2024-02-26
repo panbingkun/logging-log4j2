@@ -37,7 +37,8 @@ public class BasicAsyncLoggerContextSelector extends BasicContextSelector {
     }
 
     @Override
-    protected LoggerContext createContext() {
-        return new AsyncLoggerContext("AsyncDefault", null, (URI) null, instanceFactory);
+    protected LoggerContext createContext(
+            final String name, final URI configLocation, final ConfigurableInstanceFactory instanceFactory) {
+        return new AsyncLoggerContext(name, null, configLocation, instanceFactory);
     }
 }

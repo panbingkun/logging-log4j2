@@ -39,8 +39,8 @@ public class AsyncLateConfigTest extends LateConfigAbstractTest {
     static Stream<Log4jContextFactory> selectors() {
         final ConfigurableInstanceFactory instanceFactory = DI.createInitializedFactory();
         return Stream.<ContextSelector>of(
-                        new AsyncLoggerContextSelector(instanceFactory.newChildInstanceFactory()),
-                        new BasicAsyncLoggerContextSelector(instanceFactory.newChildInstanceFactory()))
+                        new AsyncLoggerContextSelector(instanceFactory.newChildBuilder()),
+                        new BasicAsyncLoggerContextSelector(instanceFactory.newChildBuilder()))
                 .map(Log4jContextFactory::new);
     }
 

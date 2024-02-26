@@ -37,6 +37,7 @@ import org.apache.logging.log4j.kit.logger.AbstractLogger;
 import org.apache.logging.log4j.message.FlowMessageFactory;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.MessageFactory;
+import org.apache.logging.log4j.plugins.Inject;
 import org.apache.logging.log4j.spi.recycler.Recycler;
 import org.apache.logging.log4j.spi.recycler.RecyclerFactory;
 import org.apache.logging.log4j.util.StackLocatorUtil;
@@ -349,5 +350,34 @@ public class AsyncLogger extends Logger {
     // package-protected for tests
     AsyncLoggerDisruptor getAsyncLoggerDisruptor() {
         return loggerDisruptor;
+    }
+
+    public static class Builder extends Logger.Builder {
+
+        private final AsyncLoggerDisruptor disruptor;
+
+        @Inject
+        public Builder(
+                final LoggerContext context,
+                final MessageFactory messageFactory,
+                final FlowMessageFactory flowMessageFactory,
+                final RecyclerFactory recyclerFactory,
+                final org.apache.logging.log4j.Logger statusLogger,
+                final AsyncLoggerDisruptor disruptor) {
+            super(context, messageFactory, flowMessageFactory, recyclerFactory, statusLogger);
+            this.disruptor = disruptor;
+        }
+
+        @Override
+        public Logger get() {
+            return new AsyncLogger(
+                    getContext(),
+                    getName(),
+                    getMessageFactory(),
+                    getFlowMessageFactory(),
+                    getRecyclerFactory(),
+                    getStatusLogger(),
+                    disruptor);
+        }
     }
 }

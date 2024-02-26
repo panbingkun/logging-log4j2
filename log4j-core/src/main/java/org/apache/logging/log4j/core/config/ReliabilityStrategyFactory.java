@@ -16,10 +16,10 @@
  */
 package org.apache.logging.log4j.core.config;
 
-import org.apache.logging.log4j.core.impl.Log4jPropertyKey;
+import org.apache.logging.log4j.core.impl.PropertyKeys;
 import org.apache.logging.log4j.core.util.Loader;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.status.StatusLogger;
-import org.apache.logging.log4j.util.PropertiesUtil;
 
 /**
  * Factory for ReliabilityStrategies.
@@ -45,8 +45,10 @@ public final class ReliabilityStrategyFactory {
      */
     public static ReliabilityStrategy getReliabilityStrategy(final LoggerConfig loggerConfig) {
 
-        final String strategy = PropertiesUtil.getProperties()
-                .getStringProperty(Log4jPropertyKey.CONFIG_RELIABILITY_STRATEGY, "AwaitCompletion");
+        final String strategy = PropertyEnvironment.getGlobal()
+                .getProperty(PropertyKeys.Configuration.class)
+                .reliabilityStrategy();
+
         if ("AwaitCompletion".equals(strategy)) {
             return new AwaitCompletionReliabilityStrategy(loggerConfig);
         }

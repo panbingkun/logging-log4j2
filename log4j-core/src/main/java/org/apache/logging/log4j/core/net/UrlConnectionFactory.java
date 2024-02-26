@@ -32,9 +32,8 @@ import org.apache.logging.log4j.core.net.ssl.LaxHostnameVerifier;
 import org.apache.logging.log4j.core.net.ssl.SslConfiguration;
 import org.apache.logging.log4j.core.net.ssl.SslConfigurationFactory;
 import org.apache.logging.log4j.core.util.AuthorizationProvider;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.util.Cast;
-import org.apache.logging.log4j.util.PropertiesUtil;
-import org.apache.logging.log4j.util.PropertyEnvironment;
 import org.apache.logging.log4j.util.Strings;
 
 /**
@@ -64,7 +63,7 @@ public class UrlConnectionFactory {
             final AuthorizationProvider authorizationProvider)
             throws IOException {
         return createConnection(
-                url, lastModifiedMillis, sslConfiguration, authorizationProvider, PropertiesUtil.getProperties());
+                url, lastModifiedMillis, sslConfiguration, authorizationProvider, PropertyEnvironment.getGlobal());
     }
 
     @SuppressFBWarnings(
@@ -134,7 +133,7 @@ public class UrlConnectionFactory {
     public static URLConnection createConnection(final URL url) throws IOException {
         final URLConnection urlConnection;
         if (url.getProtocol().equals(HTTPS) || url.getProtocol().equals(HTTP)) {
-            final PropertyEnvironment props = PropertiesUtil.getProperties();
+            final PropertyEnvironment props = PropertyEnvironment.getGlobal();
             final AuthorizationProvider provider = AuthorizationProvider.getAuthorizationProvider(props);
             final SslConfiguration sslConfiguration = SslConfigurationFactory.getSslConfiguration(props);
             urlConnection = createConnection(url, 0, sslConfiguration, provider, props);

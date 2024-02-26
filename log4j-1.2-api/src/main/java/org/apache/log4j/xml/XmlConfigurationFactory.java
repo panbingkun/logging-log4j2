@@ -22,9 +22,10 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Order;
+import org.apache.logging.log4j.core.impl.PropertyKeys;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.plugins.Namespace;
 import org.apache.logging.log4j.plugins.Plugin;
-import org.apache.logging.log4j.util.PropertiesUtil;
 
 /**
  * Constructs a Configuration usable in Log4j 2 from a Log4j 1 configuration file.
@@ -46,18 +47,28 @@ public class XmlConfigurationFactory extends ConfigurationFactory {
      */
     protected static final String DEFAULT_PREFIX = "log4j";
 
+    private final boolean enabled;
+
+    public XmlConfigurationFactory() {
+        this(PropertyEnvironment.getGlobal().getProperty(PropertyKeys.Version1.class));
+    }
+
+    private XmlConfigurationFactory(final PropertyKeys.Version1 config) {
+        this.enabled = config.compatibility() || config.configuration() != null;
+    }
+
     @Override
     protected String[] getSupportedTypes() {
-        if (!PropertiesUtil.getProperties()
-                .getBooleanProperty(ConfigurationFactory.LOG4J1_EXPERIMENTAL, Boolean.FALSE)) {
-            return null;
+        if (enabled) {
+            return new String[] {FILE_EXTENSION};
         }
-        return new String[] {FILE_EXTENSION};
+        return null;
     }
 
     @Override
     public Configuration getConfiguration(final LoggerContext loggerContext, final ConfigurationSource source) {
-        final int interval = PropertiesUtil.getProperties().getIntegerProperty(Log4j1Configuration.MONITOR_INTERVAL, 0);
+        final int interval =
+                PropertyEnvironment.getGlobal().getIntegerProperty(Log4j1Configuration.MONITOR_INTERVAL, 0);
         return new XmlConfiguration(loggerContext, source, interval);
     }
 

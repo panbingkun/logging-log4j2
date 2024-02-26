@@ -23,12 +23,12 @@ import aQute.bnd.annotation.spi.ServiceProvider;
 import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.spi.LoggingSystemProperty;
 import org.apache.logging.log4j.spi.recycler.AbstractRecycler;
 import org.apache.logging.log4j.spi.recycler.Recycler;
 import org.apache.logging.log4j.spi.recycler.RecyclerFactory;
 import org.apache.logging.log4j.spi.recycler.RecyclerFactoryProvider;
-import org.apache.logging.log4j.util.PropertyEnvironment;
 import org.jctools.queues.MpmcArrayQueue;
 
 /**

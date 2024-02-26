@@ -16,13 +16,13 @@
  */
 package org.apache.logging.log4j.core;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
-import org.apache.logging.log4j.core.impl.internal.InternalLoggerContext;
 import org.apache.logging.log4j.core.util.DefaultShutdownCallbackRegistry;
 import org.apache.logging.log4j.core.util.ShutdownCallbackRegistry;
+import org.apache.logging.log4j.simple.SimpleLoggerContext;
 import org.apache.logging.log4j.spi.LoggerContextFactory;
 import org.junit.jupiter.api.Test;
 
@@ -33,14 +33,18 @@ public class LoggerContextTest {
 
     @Test
     public void shutdownTest() {
-        LoggerContextFactory contextFactory = LogManager.getFactory();
-        assertTrue(contextFactory instanceof Log4jContextFactory);
-        Log4jContextFactory factory = (Log4jContextFactory) contextFactory;
-        ShutdownCallbackRegistry registry = factory.getShutdownCallbackRegistry();
-        assertTrue(registry instanceof DefaultShutdownCallbackRegistry);
-        ((DefaultShutdownCallbackRegistry) registry).start();
-        ((DefaultShutdownCallbackRegistry) registry).stop();
-        org.apache.logging.log4j.spi.LoggerContext loggerContext = LogManager.getContext(false);
-        assertTrue(loggerContext instanceof InternalLoggerContext);
+        final LoggerContextFactory loggerContextFactory = LogManager.getFactory();
+        assertThat(loggerContextFactory).isInstanceOf(Log4jContextFactory.class);
+        final Log4jContextFactory factory = (Log4jContextFactory) loggerContextFactory;
+
+        final ShutdownCallbackRegistry shutdownCallbackRegistry = factory.getShutdownCallbackRegistry();
+        assertThat(shutdownCallbackRegistry).isInstanceOf(DefaultShutdownCallbackRegistry.class);
+        final LifeCycle registry = (LifeCycle) shutdownCallbackRegistry;
+
+        registry.start();
+        registry.stop();
+
+        final org.apache.logging.log4j.spi.LoggerContext loggerContext = LogManager.getContext(false);
+        assertThat(loggerContext).isInstanceOf(SimpleLoggerContext.class);
     }
 }

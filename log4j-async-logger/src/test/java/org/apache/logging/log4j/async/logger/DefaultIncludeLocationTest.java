@@ -21,7 +21,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.NullConfiguration;
-import org.apache.logging.log4j.util.PropertiesUtil;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -59,7 +59,7 @@ class DefaultIncludeLocationTest {
 
     static Stream<Arguments> loggerContextDefaultLocation() {
         final LoggerContext ctx = new LoggerContext("sync");
-        ctx.setProperties(PropertiesUtil.getProperties());
+        ctx.setProperties(PropertyEnvironment.getGlobal());
         final NullConfiguration config = new NullConfiguration(ctx);
         ctx.setConfiguration(config);
         return loggerConfigs(config);
@@ -75,7 +75,7 @@ class DefaultIncludeLocationTest {
 
     static Stream<LoggerConfig> asyncLoggerContextDefaultLocation() {
         final AsyncLoggerContext ctx = new AsyncLoggerContext("async");
-        ctx.setProperties(PropertiesUtil.getProperties());
+        ctx.setProperties(PropertyEnvironment.getGlobal());
         final NullConfiguration config = new NullConfiguration(ctx);
         ctx.setConfiguration(config);
         return loggerConfigs(config).map(args -> (LoggerConfig) args.get()[0]);

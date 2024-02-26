@@ -19,6 +19,7 @@ package org.apache.logging.log4j.plugins.di;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.lang.Nullable;
 import org.apache.logging.log4j.plugins.FactoryType;
 import org.apache.logging.log4j.plugins.Ordered;
@@ -36,7 +37,7 @@ import org.apache.logging.log4j.util.Cast;
 
 /**
  * Configuration manager for the state of an instance factory. Configurable instance factories can form a
- * hierarchy by {@linkplain #newChildInstanceFactory() creating children factories} to enable inheritance
+ * hierarchy by {@linkplain #newChildInstanceFactory}  creating children factories} to enable inheritance
  * of bindings, scopes, factory resolvers, instance post-processors, and reflection agents.
  */
 public interface ConfigurableInstanceFactory extends InstanceFactory {
@@ -130,6 +131,15 @@ public interface ConfigurableInstanceFactory extends InstanceFactory {
      * @return new child instance factory
      */
     ConfigurableInstanceFactory newChildInstanceFactory();
+
+    /**
+     * Creates a new child instance factory from this factory which uses bindings from this factory as fallback
+     * bindings.
+     *
+     * @return new child instance factory
+     */
+    ConfigurableInstanceFactory newChildInstanceFactory(
+            Supplier<PropertyEnvironment> environment, Supplier<ClassLoader> loader);
 
     /**
      * Sets the {@link ReflectionAgent} used for invoking {@link java.lang.reflect.AccessibleObject#setAccessible(boolean)}

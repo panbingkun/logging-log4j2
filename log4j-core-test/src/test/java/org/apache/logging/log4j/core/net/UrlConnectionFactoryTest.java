@@ -47,7 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.ConfigurationSourceTest;
-import org.apache.logging.log4j.util.PropertiesUtil;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -134,7 +134,7 @@ public class UrlConnectionFactoryTest {
 
     private int verifyNotModified(final URI uri, final long lastModifiedMillis) throws Exception {
         final HttpURLConnection urlConnection = UrlConnectionFactory.createConnection(
-                uri.toURL(), lastModifiedMillis, null, null, PropertiesUtil.getProperties());
+                uri.toURL(), lastModifiedMillis, null, null, PropertyEnvironment.getGlobal());
         urlConnection.connect();
 
         try {

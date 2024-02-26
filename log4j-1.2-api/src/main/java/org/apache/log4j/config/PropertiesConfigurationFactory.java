@@ -21,9 +21,9 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Order;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.plugins.Namespace;
 import org.apache.logging.log4j.plugins.Plugin;
-import org.apache.logging.log4j.util.PropertiesUtil;
 
 /**
  * Configures Log4j from a log4j 1 format properties file.
@@ -47,7 +47,7 @@ public class PropertiesConfigurationFactory extends ConfigurationFactory {
 
     @Override
     protected String[] getSupportedTypes() {
-        if (!PropertiesUtil.getProperties()
+        if (!PropertyEnvironment.getGlobal()
                 .getBooleanProperty(ConfigurationFactory.LOG4J1_EXPERIMENTAL, Boolean.FALSE)) {
             return null;
         }
@@ -56,7 +56,8 @@ public class PropertiesConfigurationFactory extends ConfigurationFactory {
 
     @Override
     public Configuration getConfiguration(final LoggerContext loggerContext, final ConfigurationSource source) {
-        final int interval = PropertiesUtil.getProperties().getIntegerProperty(Log4j1Configuration.MONITOR_INTERVAL, 0);
+        final int interval =
+                PropertyEnvironment.getGlobal().getIntegerProperty(Log4j1Configuration.MONITOR_INTERVAL, 0);
         return new PropertiesConfiguration(loggerContext, source, interval);
     }
 

@@ -37,6 +37,7 @@ import org.apache.logging.log4j.core.time.NanoClock;
 import org.apache.logging.log4j.core.time.internal.DummyNanoClock;
 import org.apache.logging.log4j.core.util.DefaultShutdownCallbackRegistry;
 import org.apache.logging.log4j.core.util.ShutdownCallbackRegistry;
+import org.apache.logging.log4j.kit.env.PropertyEnvironment;
 import org.apache.logging.log4j.message.FlowMessageFactory;
 import org.apache.logging.log4j.message.MessageFactory;
 import org.apache.logging.log4j.plugins.Factory;
@@ -141,8 +142,10 @@ public class DefaultBundle {
     @SingletonFactory
     @ConditionalOnMissingBinding
     public ConfigurationFactory configurationFactory(
-            final ConfigurableInstanceFactory instanceFactory, final StrSubstitutor substitutor) {
-        return new DefaultConfigurationFactory(instanceFactory, substitutor);
+            final ConfigurableInstanceFactory instanceFactory,
+            final StrSubstitutor substitutor,
+            final PropertyEnvironment env) {
+        return new DefaultConfigurationFactory(instanceFactory, substitutor, env);
     }
 
     @SingletonFactory

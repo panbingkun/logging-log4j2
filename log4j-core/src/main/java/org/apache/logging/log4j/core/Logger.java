@@ -32,6 +32,8 @@ import org.apache.logging.log4j.kit.logger.AbstractLogger;
 import org.apache.logging.log4j.message.FlowMessageFactory;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.MessageFactory;
+import org.apache.logging.log4j.plugins.Inject;
+import org.apache.logging.log4j.plugins.Named;
 import org.apache.logging.log4j.spi.recycler.RecyclerFactory;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.logging.log4j.util.Supplier;
@@ -802,5 +804,68 @@ public class Logger extends AbstractLogger implements Supplier<LoggerConfig> {
     @Override
     public int hashCode() {
         return getName().hashCode();
+    }
+
+    public static class Builder implements java.util.function.Supplier<Logger> {
+        private String name;
+        private MessageFactory messageFactory;
+
+        private final LoggerContext context;
+        private final FlowMessageFactory flowMessageFactory;
+        private final RecyclerFactory recyclerFactory;
+        private final org.apache.logging.log4j.Logger statusLogger;
+
+        @Inject
+        public Builder(
+                final LoggerContext context,
+                final MessageFactory messageFactory,
+                final FlowMessageFactory flowMessageFactory,
+                final RecyclerFactory recyclerFactory,
+                final @Named("StatusLogger") org.apache.logging.log4j.Logger statusLogger) {
+            this.context = context;
+            this.messageFactory = messageFactory;
+            this.flowMessageFactory = flowMessageFactory;
+            this.recyclerFactory = recyclerFactory;
+            this.statusLogger = statusLogger;
+        }
+
+        public MessageFactory getMessageFactory() {
+            return messageFactory;
+        }
+
+        public Builder setMessageFactory(final MessageFactory messageFactory) {
+            this.messageFactory = messageFactory;
+            return this;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Builder setName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public LoggerContext getContext() {
+            return context;
+        }
+
+        public FlowMessageFactory getFlowMessageFactory() {
+            return flowMessageFactory;
+        }
+
+        public RecyclerFactory getRecyclerFactory() {
+            return recyclerFactory;
+        }
+
+        public org.apache.logging.log4j.Logger getStatusLogger() {
+            return statusLogger;
+        }
+
+        @Override
+        public Logger get() {
+            return new Logger(context, name, messageFactory, flowMessageFactory, recyclerFactory, statusLogger);
+        }
     }
 }
